@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Animal Giphys</title>
+	<script src="https://code.jquery.com/jquery-3.1.1.js"></script>
+	<!--<script type="text/javascript" src="assets/javascript/app.js"></script> -->
+	<link rel="stylesheet" type="text/css" href="assets/css/style.css">
+</head>
+<body>
+	<div class="container">
+
+		<!-- Rendered Buttons Will get Dumped here -->
+		<div id="animalButtons"></div>
+
+		<!-- Giphys will Get Dumped Here-->
+		<div id="animal-view"></div>
+
+		<form id="animal-form">
+			<label for="animal-input">Add an animal</label>
+
+			<!-- Button trigger new Giphy to be added -->
+			<input type="text" id="animal-input"></br>
+
+			<input id="addAnimal" type="submit" value="Submit">
+		</form>
+		
+		<script type="text/javascript">
+
+			// DEBUG
+			function deepLogObject(obj, indent) {
+				if( typeof indent === "undefined" )
+					indent = "";
+
+				if( typeof obj !== "object" )
+					console.log(indent + obj);
+				else
+					for( var prop in obj ) {
+						console.log( indent + prop + ":" );
+						deepLogObject( obj[prop], indent + "\t" );
+					}
+			}
+
+			//initiatlizing array
+			var animals = ["dog", "cat", "rabbit", "skunk", "goldfish", "fish", "ferret", "turtle", "sugar glider", "chinchilla", "hedgehog", "hermit crab", "gerbil", "pygmy goat", "chicken", "capybara", "teacup pig", " serval", "salamander", "frog"];
+
+			// Function for dumping the JSON content for each button into the div
+			function displayGiphys() {
+				var animal = $(this).attr("data-name");
+				console.log("animal = " + animal);
+
+				//calling giphy from the website
+				var queryURL = "http://api.giphy.com/v1/gifs/search?q=" +
+        					animal + "&api_key=dc6zaTOxFJmzC&limit=10";
+				//ajax method
+				$.ajax({
+					url: queryURL,
+					method: "GET"
+				}).done(function(response) {
+					// $("#animal-view").html("<pre>" + JSON.stringify(response) + "</pre>");
+					// deepLogObject(response);
+
+					// clear the view so older gifs aren't shown
+					$("#animal-view").html("");
+
+					for( var i = 0; i < response.data.length; i++ ) {
+
+						// create new HTML elements
+						var div = $("<div>"); // continer for just one gif
+						var img = $("<img>"); // the gif
+						var p = $("<p>"); // the caption the gif, contains rating
+
+						// img.attr( "height", response[i].images.fixed_height_still.height );
+						// img.attr( "width", response[i].images.fixed_height_still.width );
+						img.attr( "data-still", response.data[i].images.fixed_height_still.url );
+						img.attr( "data-animated", response.data[i].images.fixed_height.url );
+						img.attr( "data-state", "still" );
+						img.attr( "src", img.attr("data-still") );
+						img.attr( "class", "giffy" );
+
+						p.html("Rating: " + response.data[i].rating);
+
+						// set up HTML structure and add the div to the page
+						div.append(img);
+						div.append(p);
+						$("#animal-view").append(div);
+
+					}
+				});
+			}
+
+			//function of displaying 
+			function renderButtons() {
+				// Deleting the buttons prior to adding new movies
+        		// (this is necessary otherwise you will have repeat buttons)
+        		$("#animalButtons").empty();
+
+        		for(var i = 0; i < animals.length; i++) {
+
+        			var a = $("<button>");
+
+          			// Adding a class of movie to our button
+         			 a.addClass("animal");
+					// Adding a data-attribute
+					 a.attr("data-name", animals[i]);
+					// Providing the initial button text
+					 a.text(animals[i]);
+					// Adding the button to the animalButtons div
+					$("#animalButtons").append(a);
+				}
+			}
+
+			// This function handles events where adding animal form is submitted
+			$("#animal-form").on("submit", function(event) {
+				event.preventDefault();
+				
+				//This line grabs the input from the textbox
+				var animal = $("#animal-input").val().trim();
+
+				// dont do anything if they haven't at least typed in one non-space character (i.e. if animal name text field is blank)
+				if( animal.length > 0 ) {
+
+					// clear text field so they don't accidentally submit the same animal twice
+					document.getElementById("animal-input").value = ""; // clear text field
+					
+					// Adding the movie from the textbox to our array
+					animals.push(animal);
+
+					renderButtons();
+
+				}
+			});
+
+			
+			// Function for displaying the movie info
+      		// Using $(document).on instead of $(".movie").on to add event listenersto dynamically generated elements
+      		$(document).on("click", ".animal", displayGiphys);
+
+      		// Function to turn on/off Giffy animations on click
+      		$(document).on("click", ".giffy", function(event) {
+      			var img = $(this);
+
+      			if( img.attr("data-state") == "still" ) {
+      				
+      				// animate the gif
+      				img.attr( "src", img.attr("data-animated") );
+      				img.attr( "data-state", "animated" );
+
+      			} else {
+
+      				// stop animating the gif
+      				img.attr( "src", img.attr("data-still") );
+      				img.attr( "data-state", "still" );
+
+      			}
+      		});
+			 
+			// Calling the renderButtons function to display the intial buttons
+			renderButtons();
+
+			</script>
+		</div>
+	</body>
+	</html>

@@ -1,0 +1,9 @@
+#animal-form { 
+	float:right;
+	margin-top: 2em;
+}
+
+#animal-view div {
+	display: inline-block;
+	margin: 0.5em 1em;
+}
